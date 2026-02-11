@@ -1,0 +1,3 @@
+# certificados locales (no versionar)
+certs/secureapprove/*.crt
+certs/secureapprove/*.key

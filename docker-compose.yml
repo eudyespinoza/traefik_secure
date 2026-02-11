@@ -1,0 +1,31 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik-secureapprove
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+      # Certificado TLS de SecureApprove (ajustá el path según tu host)
+      # Opción A (portable): poné los .crt/.key en ./certs/secureapprove
+      - ./certs/secureapprove:/certs/secureapprove:ro
+      # Opción B (server): montá el directorio real del server
+      # - /etc/ssl/secureapprove:/certs/secureapprove:ro
+
+    networks:
+      - secureapprove_proxy
+    restart: unless-stopped
+
+networks:
+  secureapprove_proxy:
+    external: true

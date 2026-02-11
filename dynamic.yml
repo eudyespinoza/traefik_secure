@@ -1,0 +1,68 @@
+http:
+  middlewares:
+    redirect-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-sec-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        frameDeny: true
+        contentTypeNosniff: true
+        referrerPolicy: no-referrer
+
+    gzip-compress:
+      compress: {}
+
+    cors-headers:
+      headers:
+        accessControlAllowOriginList:
+          - "https://secureapprove.com"
+          - "https://www.secureapprove.com"
+          - "https://api.secureapprove.com"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+          - "X-Requested-With"
+          - "Accept"
+          - "Origin"
+          - "Idempotency-Key"
+          - "X-API-TOKEN"
+          - "x-locale"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 86400
+
+  routers:
+    # Redirige todo HTTP a HTTPS
+    http-catchall:
+      rule: "HostRegexp(`{any:.+}`)"
+      entryPoints: [ "web" ]
+      middlewares: [ "redirect-https" ]
+      service: noop
+
+    # NOTA: Los routers reales de SecureApprove se crean desde los labels
+    # del proyecto de SecureApprove (docker provider).
+
+  services:
+    noop:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1"
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+
+  certificates:
+    - certFile: /certs/secureapprove/secureapprove.com.crt
+      keyFile: /certs/secureapprove/secureapprove.com.key
