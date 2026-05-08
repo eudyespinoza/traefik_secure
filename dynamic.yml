@@ -23,6 +23,10 @@ http:
           - "https://secureapprove.com"
           - "https://www.secureapprove.com"
           - "https://api.secureapprove.com"
+          - "https://distromaxi.com"
+          - "https://www.distromaxi.com"
+          - "https://distromaxi.com.ar"
+          - "https://www.distromaxi.com.ar"
         accessControlAllowMethods:
           - "GET"
           - "POST"
@@ -49,8 +53,8 @@ http:
       middlewares: [ "redirect-https" ]
       service: noop
 
-    # NOTA: Los routers reales de SecureApprove se crean desde los labels
-    # del proyecto de SecureApprove (docker provider).
+    # NOTA: Los routers reales de las apps se crean desde los labels
+    # de cada proyecto (docker provider).
 
   services:
     noop:
@@ -66,3 +70,7 @@ tls:
   certificates:
     - certFile: /certs/secureapprove/secureapprove.com.crt
       keyFile: /certs/secureapprove/secureapprove.com.key
+    - certFile: /certs/secureapprove/distromaxi.com.crt
+      keyFile: /certs/secureapprove/distromaxi.com.key
+    - certFile: /certs/secureapprove/distromaxi.com.ar.crt
+      keyFile: /certs/secureapprove/distromaxi.com.ar.key

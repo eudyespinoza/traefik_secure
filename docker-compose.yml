@@ -16,10 +16,10 @@ services:
       - ./dynamic.yml:/etc/traefik/dynamic.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-      # Certificado TLS de SecureApprove (ajustá el path según tu host)
-      # Opción A (portable): poné los .crt/.key en ./certs/secureapprove
+      # Certificados TLS de las apps publicadas (SecureApprove y DistroMaxi)
+      # Opcion A (portable): pone los .crt/.key en ./certs/secureapprove
       - ./certs/secureapprove:/certs/secureapprove:ro
-      # Opción B (server): montá el directorio real del server
+      # Opcion B (server): monta el directorio real del server
       # - /etc/ssl/secureapprove:/certs/secureapprove:ro
 
     networks:

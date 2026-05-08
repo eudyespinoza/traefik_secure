@@ -1,49 +1,57 @@
-# Traefik (solo SecureApprove)
+# Traefik (SecureApprove + DistroMaxi)
 
-Este directorio contiene un proxy Traefik mínimo para publicar **SecureApprove**.
+Este directorio contiene un proxy Traefik minimo para publicar SecureApprove y
+DistroMaxi desde proyectos Docker separados.
 
 ## Requisitos
 
-- Docker + Docker Compose
-- La app de SecureApprove (en otro proyecto) debe estar en la **misma red Docker** que Traefik.
-- Certificados TLS disponibles como:
-  - `./certs/secureapprove/secureapprove.com.crt`
-  - `./certs/secureapprove/secureapprove.com.key`
+- Docker + Docker Compose.
+- Las apps publicadas deben estar en la misma red Docker externa que Traefik:
+  `secureapprove_proxy`.
+- Certificados TLS disponibles en `./certs/secureapprove`:
+  - `secureapprove.com.crt`
+  - `secureapprove.com.key`
+  - `distromaxi.com.crt`
+  - `distromaxi.com.key`
+  - `distromaxi.com.ar.crt`
+  - `distromaxi.com.ar.key`
+
+Si en el server los certificados viven en otro directorio, monta ese directorio
+en `/certs/secureapprove` dentro del contenedor Traefik.
 
 ## Uso
 
-1) Crear la red externa (una sola vez):
+1. Crear la red externa una sola vez:
 
 ```bash
 docker network create secureapprove_proxy
 ```
 
-2) Levantar Traefik:
+2. Levantar Traefik:
 
 ```bash
 docker compose up -d
 ```
 
-## Labels mínimos esperados (en el proyecto SecureApprove)
+3. Levantar cada app con labels Traefik y conectada a `secureapprove_proxy`.
 
-Asegurate de:
-- conectar los containers a la red `secureapprove_proxy`
-- agregar labels Traefik (ejemplo):
+## Labels esperados
+
+Los routers reales se crean desde los labels de cada proyecto.
+
+Ejemplo para un frontend:
 
 ```yaml
 labels:
   - traefik.enable=true
-
-  # Router HTTPS
-  - traefik.http.routers.secureapprove.entrypoints=websecure
-  - traefik.http.routers.secureapprove.rule=Host(`secureapprove.com`) || Host(`www.secureapprove.com`)
-  - traefik.http.routers.secureapprove.tls=true
-
-  # Servicio
-  - traefik.http.services.secureapprove.loadbalancer.server.port=80
-
-  # Middlewares (definidos en dynamic.yml de este proxy)
-  - traefik.http.routers.secureapprove.middlewares=default-sec-headers@file,gzip-compress@file,cors-headers@file
+  - traefik.docker.network=secureapprove_proxy
+  - traefik.http.routers.mi-app.entrypoints=websecure
+  - traefik.http.routers.mi-app.rule=Host(`example.com`) || Host(`www.example.com`)
+  - traefik.http.routers.mi-app.tls=true
+  - traefik.http.routers.mi-app.middlewares=default-sec-headers@file,gzip-compress@file
+  - traefik.http.services.mi-app.loadbalancer.server.port=80
 ```
 
-Si tu API corre en otro contenedor/puerto (por ejemplo `api.secureapprove.com`), creá un segundo router/servicio con su `rule` y `server.port`.
+Para APIs publicadas bajo el mismo dominio, crea un router adicional con
+`PathPrefix("/api")`, mayor prioridad que el frontend y el puerto interno del
+backend.
